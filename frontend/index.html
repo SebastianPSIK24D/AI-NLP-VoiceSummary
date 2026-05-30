@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VoiceIQ — NLP Audio Analyzer</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ── Background Decorative Elements ── -->
+  <div class="bg-orb bg-orb--1"></div>
+  <div class="bg-orb bg-orb--2"></div>
+  <div class="bg-orb bg-orb--3"></div>
+  <div class="grid-overlay"></div>
+
+  <!-- ── Header ── -->
+  <header class="header">
+    <div class="header__logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M10 16 Q13 10 16 16 Q19 22 22 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <circle cx="16" cy="16" r="2" fill="currentColor"/>
+        </svg>
+      </div>
+      <span class="logo-text">VoiceIQ</span>
+    </div>
+    <div class="header__badge">Powered by Groq · Whisper · LLaMA 3</div>
+  </header>
+
+  <!-- ── Main Content ── -->
+  <main class="main">
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <h1 class="hero__title">
+        Ubah Suara<br/>
+        <span class="hero__title--accent">Menjadi Wawasan</span>
+      </h1>
+      <p class="hero__subtitle">Upload atau rekam audio, biarkan AI menganalisis, meringkas, dan mengekstrak informasi penting secara otomatis.</p>
+    </section>
+
+    <!-- Upload Card -->
+    <section class="card card--upload" id="upload-section">
+      <div class="card__header">
+        <span class="card__step">01</span>
+        <h2 class="card__title">Input Audio</h2>
+      </div>
+
+      <!-- Tab Switcher -->
+      <div class="tab-switcher" role="tablist">
+        <button class="tab-btn tab-btn--active" id="tab-upload" role="tab" aria-selected="true" aria-controls="panel-upload" onclick="switchTab('upload')">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M10 2v12M6 6l4-4 4 4M4 16h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Upload File
+        </button>
+        <button class="tab-btn" id="tab-record" role="tab" aria-selected="false" aria-controls="panel-record" onclick="switchTab('record')">
+          <svg viewBox="0 0 20 20" fill="none"><rect x="7" y="2" width="6" height="10" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M4 10a6 6 0 0 0 12 0M10 16v2M8 18h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Rekam Audio
+        </button>
+      </div>
+
+      <!-- Panel: Upload File -->
+      <div class="tab-panel tab-panel--active" id="panel-upload" role="tabpanel">
+        <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+          <div class="dropzone__icon">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"/>
+              <path d="M24 32V20M18 26l6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M17 35h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <p class="dropzone__primary">Drag & drop file audio di sini</p>
+          <p class="dropzone__secondary">atau klik untuk browse</p>
+          <p class="dropzone__formats">MP3, WAV, OGG, M4A, FLAC · Maks. 25 MB</p>
+        </div>
+        <input type="file" id="file-input" accept="audio/*,.mp3,.wav,.ogg,.m4a,.flac,.webm" hidden onchange="handleFileSelect(event)" />
+
+        <!-- Selected File Preview -->
+        <div class="file-preview" id="file-preview" style="display:none">
+          <div class="file-preview__icon">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M9 18V5l12-2v13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="16" r="3" stroke="currentColor" stroke-width="1.8"/></svg>
+          </div>
+          <div class="file-preview__info">
+            <p class="file-preview__name" id="file-name">—</p>
+            <p class="file-preview__size" id="file-size">—</p>
+          </div>
+          <button class="file-preview__remove" onclick="removeFile()" aria-label="Hapus file">
+            <svg viewBox="0 0 20 20" fill="none"><path d="M15 5L5 15M5 5l10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Panel: Record Audio -->
+      <div class="tab-panel" id="panel-record" role="tabpanel">
+        <div class="recorder">
+          <div class="recorder__visualizer" id="visualizer">
+            <div class="visualizer-bars" id="visualizer-bars">
+              <span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="recorder__idle-icon" id="recorder-idle-icon">
+              <svg viewBox="0 0 48 48" fill="none"><rect x="16" y="6" width="16" height="26" rx="8" stroke="currentColor" stroke-width="1.8"/><path d="M8 26c0 8.837 7.163 16 16 16s16-7.163 16-16M24 42v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+          </div>
+          <p class="recorder__status" id="recorder-status">Siap merekam</p>
+          <p class="recorder__timer" id="recorder-timer" style="display:none">00:00</p>
+
+          <div class="recorder__controls">
+            <button class="btn btn--record" id="btn-record" onclick="toggleRecord()">
+              <span class="btn__icon">
+                <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6" fill="currentColor"/></svg>
+              </span>
+              Mulai Rekam
+            </button>
+          </div>
+
+          <!-- Recorded Audio Preview -->
+          <div class="recorded-preview" id="recorded-preview" style="display:none">
+            <audio id="recorded-audio" controls></audio>
+            <button class="btn btn--ghost btn--sm" onclick="clearRecording()">
+              <svg viewBox="0 0 20 20" fill="none"><path d="M15 5L5 15M5 5l10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Hapus Rekaman
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Process Button -->
+      <button class="btn btn--primary btn--full" id="btn-process" onclick="processAudio()" disabled>
+        <span class="btn__text">Analisis Audio</span>
+        <span class="btn__icon">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M4 10h12M12 6l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
+    </section>
+
+    <!-- Loading State -->
+    <section class="loading-section" id="loading-section" style="display:none">
+      <div class="loading-card">
+        <div class="loading-animation">
+          <div class="pulse-ring pulse-ring--1"></div>
+          <div class="pulse-ring pulse-ring--2"></div>
+          <div class="pulse-ring pulse-ring--3"></div>
+          <div class="loading-core">
+            <svg viewBox="0 0 32 32" fill="none"><path d="M16 4v5M16 23v5M4 16H9M23 16h5M7.05 7.05l3.54 3.54M21.42 21.42l3.53 3.53M7.05 24.95l3.54-3.54M21.42 10.58l3.53-3.53" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+        <div class="loading-steps">
+          <div class="loading-step loading-step--active" id="step-1">
+            <div class="step-dot"></div>
+            <span>Mengunggah audio...</span>
+          </div>
+          <div class="loading-step" id="step-2">
+            <div class="step-dot"></div>
+            <span>Transkripsi dengan Whisper AI...</span>
+          </div>
+          <div class="loading-step" id="step-3">
+            <div class="step-dot"></div>
+            <span>Analisis NLP dengan LLaMA 3...</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Error State -->
+    <div class="error-toast" id="error-toast" style="display:none" role="alert">
+      <div class="error-toast__icon">
+        <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M10 6v5M10 14v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>
+      <p class="error-toast__message" id="error-message">Terjadi kesalahan.</p>
+      <button class="error-toast__close" onclick="hideError()" aria-label="Tutup">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4l8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <!-- Results Section -->
+    <section class="results-section" id="results-section" style="display:none">
+      <div class="results-header">
+        <span class="card__step">02</span>
+        <h2 class="card__title">Hasil Analisis</h2>
+        <button class="btn btn--ghost btn--sm" onclick="resetAll()">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M4 10a6 6 0 1 1 1.5 4M4 14V10H8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Analisis Baru
+        </button>
+      </div>
+
+      <div class="results-grid">
+
+        <!-- Transcript Card -->
+        <div class="result-card result-card--transcript">
+          <div class="result-card__header">
+            <div class="result-card__icon result-card__icon--blue">
+              <svg viewBox="0 0 20 20" fill="none"><path d="M4 5h12M4 8h12M4 11h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <h3 class="result-card__title">Transkripsi</h3>
+            <button class="copy-btn" onclick="copyText('transcript-content')" title="Salin teks">
+              <svg viewBox="0 0 20 20" fill="none"><rect x="7" y="7" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M4 14V4a1 1 0 0 1 1-1h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+          <div class="result-card__body result-card__body--scroll">
+            <p id="transcript-content" class="result-text result-text--mono"></p>
+          </div>
+        </div>
+
+        <!-- Summary Card -->
+        <div class="result-card result-card--summary">
+          <div class="result-card__header">
+            <div class="result-card__icon result-card__icon--purple">
+              <svg viewBox="0 0 20 20" fill="none"><path d="M10 3l1.8 3.6 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4L4.2 7.2l4-.6L10 3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="result-card__title">Ringkasan</h3>
+            <button class="copy-btn" onclick="copyText('summary-content')" title="Salin teks">
+              <svg viewBox="0 0 20 20" fill="none"><rect x="7" y="7" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M4 14V4a1 1 0 0 1 1-1h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+          <div class="result-card__body">
+            <p id="summary-content" class="result-text"></p>
+          </div>
+        </div>
+
+        <!-- Important Points Card -->
+        <div class="result-card result-card--points">
+          <div class="result-card__header">
+            <div class="result-card__icon result-card__icon--amber">
+              <svg viewBox="0 0 20 20" fill="none"><path d="M5 10h10M5 6h10M5 14h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <h3 class="result-card__title">Poin Penting</h3>
+            <span class="result-card__count" id="points-count">0</span>
+          </div>
+          <div class="result-card__body">
+            <ul id="points-content" class="result-list"></ul>
+          </div>
+        </div>
+
+        <!-- Tasks Card -->
+        <div class="result-card result-card--tasks">
+          <div class="result-card__header">
+            <div class="result-card__icon result-card__icon--green">
+              <svg viewBox="0 0 20 20" fill="none"><path d="M8 10l2 2 4-4M5 6h10a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="result-card__title">Daftar Tugas</h3>
+            <span class="result-card__count" id="tasks-count">0</span>
+          </div>
+          <div class="result-card__body">
+            <ul id="tasks-content" class="result-list result-list--tasks"></ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── Footer ── -->
+  <footer class="footer">
+    <p>VoiceIQ · Dibuat dengan FastAPI + Groq API · Whisper v3 + LLaMA 3</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
