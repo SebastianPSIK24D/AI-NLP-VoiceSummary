@@ -1,3 +1,14 @@
+## Setup untuk Kontributor / Pengguna Baru
+
+1. Clone repository ini:
+   git clone https://github.com/USERNAME/voiceiq-nlp.git
+
+2. Buat API Key Groq gratis di: https://console.groq.com/keys
+
+3. Buat file .env di folder backend/:
+   cp backend/.env.example backend/.env
+   # Lalu isi GROQ_API_KEY dengan key milik kamu sendiri
+
 # VoiceIQ — NLP Audio Analyzer
 
 Aplikasi web NLP yang mengubah audio menjadi transkripsi, ringkasan, poin penting, dan daftar tugas secara otomatis menggunakan **Groq API** (Whisper + LLaMA 3).
