@@ -371,6 +371,9 @@ async function processAudio() {
   const formData = new FormData();
   formData.append("file", audioSource, audioName);
 
+  const includeTasks = document.getElementById("include-tasks").checked;
+  formData.append("include_tasks", includeTasks);
+
   try {
     // Step 2: Kirim ke backend
     setTimeout(() => setLoadingStep(2), 1500);
@@ -447,15 +450,23 @@ function displayResults(data) {
   document.getElementById("points-count").textContent = points.length;
 
   // Daftar Tugas
-  const tasksEl = document.getElementById("tasks-content");
-  const tasks = Array.isArray(data.tasks) ? data.tasks : [];
-  tasksEl.innerHTML = "";
-  tasks.forEach(task => {
-    const li = document.createElement("li");
-    li.textContent = task;
-    tasksEl.appendChild(li);
-  });
-  document.getElementById("tasks-count").textContent = tasks.length;
+  const includeTasks = document.getElementById("include-tasks").checked;
+  const tasksCard = document.querySelector(".result-card--tasks");
+
+  if (includeTasks && data.tasks) {
+    const tasksEl = document.getElementById("tasks-content");
+    const tasks = Array.isArray(data.tasks) ? data.tasks : [];
+    tasksEl.innerHTML = "";
+    tasks.forEach(task => {
+      const li = document.createElement("li");
+      li.textContent = task;
+      tasksEl.appendChild(li);
+    });
+    document.getElementById("tasks-count").textContent = tasks.length;
+    tasksCard.style.display = "block";
+  } else {
+    tasksCard.style.display = "none";
+  }
 
   // Tampilkan section hasil
   resultsSection.style.display = "block";

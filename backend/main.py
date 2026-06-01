@@ -11,7 +11,7 @@ import shutil
 from pathlib import Path
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
@@ -92,7 +92,10 @@ async def root():
 
 # ─── Main Endpoint: Process Audio ─────────────────────────────────────────────
 @app.post("/process-audio/")
-async def process_audio(file: UploadFile = File(...)):
+async def process_audio(
+    file: UploadFile = File(...),
+    include_tasks: bool = Form(False),
+):
     """
     Endpoint utama untuk memproses file audio.
 
@@ -178,7 +181,7 @@ async def process_audio(file: UploadFile = File(...)):
         # ── 5. Analisis NLP dengan LLaMA ───────────────────────────────────
         logger.info("[Pipeline] Langkah 2/2: Mengirim ke LLaMA API...")
         try:
-            analysis = analyze_transcript(transcript, GROQ_API_KEY)
+            analysis = analyze_transcript(transcript, GROQ_API_KEY, include_tasks)
         except ValueError as e:
             logger.error(f"[LLaMA] Error: {e}")
             raise HTTPException(status_code=422, detail=f"Analisis NLP gagal: {str(e)}")

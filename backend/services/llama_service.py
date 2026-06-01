@@ -21,15 +21,22 @@ LLAMA_MODEL = "llama-3.1-8b-instant"
 SYSTEM_PROMPT = """Analis percakapan. Balas HANYA dengan JSON valid, tanpa teks lain."""
 
 # Template prompt untuk analisis teks
-ANALYSIS_PROMPT_TEMPLATE = """Analisis teks ini, balas HANYA JSON:
+ANALYSIS_PROMPT_WITH_TASKS = """Analisis teks ini, balas HANYA JSON:
 
 {transcript}
 
 Format:
-{{"summary":"ringkasan 2-3 kalimat","important_points":["poin1","poin2"],"tasks":["tugas1"]}}"""
+{{"summary":"ringkasan lengkap sesuai panjang audio","important_points":["maksimal 5 poin penting"],"tasks":["tugas1"]}}"""
+
+ANALYSIS_PROMPT_NO_TASKS = """Analisis teks ini, balas HANYA JSON:
+
+{transcript}
+
+Format:
+{{"summary":"ringkasan lengkap sesuai panjang audio","important_points":["maksimal 5 poin penting"]}}"""
 
 
-def analyze_transcript(transcript: str, api_key: str) -> dict:
+def analyze_transcript(transcript: str, api_key: str, include_tasks: bool = True) -> dict:
     """
     Mengirim teks transkripsi ke Groq LLaMA API untuk dianalisis.
 
@@ -58,7 +65,10 @@ def analyze_transcript(transcript: str, api_key: str) -> dict:
     }
 
     # Format prompt dengan transkripsi
-    user_prompt = ANALYSIS_PROMPT_TEMPLATE.format(transcript=transcript)
+    if include_tasks:
+        user_prompt = ANALYSIS_PROMPT_WITH_TASKS.format(transcript=transcript)
+    else:
+        user_prompt = ANALYSIS_PROMPT_NO_TASKS.format(transcript=transcript)
 
     # Payload request
     payload = {
@@ -68,7 +78,7 @@ def analyze_transcript(transcript: str, api_key: str) -> dict:
             {"role": "user", "content": user_prompt},
         ],
         "temperature": 0.3,       # Rendah untuk output yang konsisten
-        "max_tokens": 1024,
+        "max_tokens": 2048,
         "response_format": {"type": "json_object"},  # Force JSON output
     }
 
@@ -149,7 +159,6 @@ def _parse_llm_json(content: str) -> dict:
         "important_points": ["Tidak dapat mengekstrak poin penting."],
         "tasks": ["Tidak dapat mengekstrak daftar tugas."],
     }
-
 
 def _validate_and_normalize(data: dict) -> dict:
     """

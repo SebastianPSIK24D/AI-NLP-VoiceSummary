@@ -1,0 +1,3 @@
+# perintah terminal untuk menjalankan backend dan frontend
+backend: cd backend -> uvicorn main:app --reload --port 8000
+fontend: cd frontend -> python -m http.server 3000
